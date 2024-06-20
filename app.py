@@ -3,10 +3,13 @@ import pandas as pd
 import joblib
 from sklearn.preprocessing import StandardScaler
 
-# Load the saved model
-model = joblib.load('final_model.pkl')
+# Cache the model loading
+@st.cache_resource
+def load_model():
+    return joblib.load('final_model.pkl')
 
 # Function to preprocess data
+@st.cache_data
 def preprocess_data(df):
     # Create a dictionary mapping statuses to numerical values
     status_values = {
@@ -72,6 +75,9 @@ def main():
     st.title("Prediction App")
     st.write("Upload your data and enter an ID to get the probability of falling into 'Yes' or 'No' category.")
     
+    # Load the model
+    model = load_model()
+    
     # File uploader
     uploaded_file = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx", "xls"])
     
@@ -81,7 +87,7 @@ def main():
             if uploaded_file.name.endswith('.csv'):
                 df_uploaded = pd.read_csv(uploaded_file)
             else:
-                df_uploaded = pd.read_excel(uploaded_file)
+                df_uploaded = pd.read_excel(uploaded_file, engine='openpyxl')
             
             # Show head of uploaded data
             st.subheader("Head of Uploaded Data")
